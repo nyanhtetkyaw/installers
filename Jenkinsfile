@@ -80,14 +80,22 @@ pipeline {
             }
         }
 
-        //stage('Cleanup Artifacts') {
-            //steps {
-                //script {
-                     //sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-                     //sh "docker rmi ${IMAGE_NAME}:latest"
-                //}
-            //}
-        //}
+        stage('Cleanup Artifacts') {
+            steps {
+                script {
+                     sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                     sh "docker rmi ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+
+        stage("Trigger CD Pipeline") {
+            steps {
+                script {
+                    sh "curl -v -k --user Jenkins:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' '10.1.2.218:/8080/job/gitops-pipeline/buildWithParameters?token=gitops-token'"
+                }
+            }
+        }
     }
 }
 
